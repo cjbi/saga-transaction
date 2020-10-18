@@ -8,7 +8,7 @@ public interface LockStore {
     /**
      * Acquire lock boolean.
      *
-     * @param xid 事务id
+     * @param xid transaction id.
      * @return
      */
     boolean acquireLock(String xid);

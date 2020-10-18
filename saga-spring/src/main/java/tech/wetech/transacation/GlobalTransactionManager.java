@@ -12,12 +12,17 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.ReflectionUtils;
 import tech.wetech.transacation.context.TransactionContext;
+import tech.wetech.transacation.context.TransactionContextHolder;
+import tech.wetech.transacation.store.LockStore;
+import tech.wetech.transacation.store.StatusStore;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * 全局的事务管理器，通过consul协调分布式场景的Saga事务模型。
@@ -30,8 +35,25 @@ public class GlobalTransactionManager implements PlatformTransactionManager {
     private final TransactionContext transactionContext;
     private final ChainedTransactionManager delegate;
 
-    public GlobalTransactionManager(TransactionContext transactionContext, PlatformTransactionManager... transactionManagers) {
-        this.transactionContext = transactionContext;
+    public void setNodeKey(String nodeKey) {
+        this.transactionContext.setNodeKey(nodeKey);
+    }
+
+    public void setLockStore(LockStore lockStore) {
+        this.transactionContext.setLockStore(lockStore);
+    }
+
+    public void setStatusStore(StatusStore statusStore) {
+        this.transactionContext.setStatusStore(statusStore);
+    }
+
+    public void setIgnoreCleanupResources(List<Class<?>> resources) {
+        this.transactionContext.setIgnoreCleanupResources(resources);
+    }
+
+    public GlobalTransactionManager(PlatformTransactionManager... transactionManagers) {
+        TransactionContextHolder.initTransactionContext();
+        this.transactionContext = TransactionContextHolder.getTransactionContext();
         this.delegate = new ChainedTransactionManager(transactionManagers);
     }
 
@@ -47,7 +69,8 @@ public class GlobalTransactionManager implements PlatformTransactionManager {
             transactionContext.bindGlobalLockFlag();
         }
         TransactionStatus transaction = delegate.getTransaction(definition);
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+        //If transaction is active And newly, register StatusSynchronization to TransactionSynchronizationManager.
+        if (TransactionSynchronizationManager.isSynchronizationActive() && transaction.isNewTransaction()) {
             TransactionSynchronizationManager.registerSynchronization(StatusSynchronization.INSTANCE);
         }
         return transaction;
@@ -57,7 +80,8 @@ public class GlobalTransactionManager implements PlatformTransactionManager {
     public void commit(TransactionStatus status) throws TransactionException {
         String xid = transactionContext.getXID();
         transactionContext.getStatusStore().saveTransactionStatus(xid, transactionContext.getNodeKey(), true);
-        if (transactionContext.holdLock() || xid == null) {
+        //When the transaction is committing, if it hold the lock, it is committed synchronously, otherwise it is asynchronous.
+        if (transactionContext.holdLock()) {
             doCommit(status, xid);
         } else {
             //If it is not the transaction initiator, Async commit transaction
@@ -84,7 +108,7 @@ public class GlobalTransactionManager implements PlatformTransactionManager {
                     transactionContext.putAll(entries);
                     doCommit(status, xid);
                 } catch (Exception e) {
-                    log.error("");
+                    log.error("Commit Transaction has occurred exception: {}", e.getMessage(), e);
                     rollback(status);
                 }
                 return null;
@@ -98,16 +122,30 @@ public class GlobalTransactionManager implements PlatformTransactionManager {
         try {
             Field field = ReflectionUtils.findField(TransactionSynchronizationManager.class, "resources", ThreadLocal.class);
             field.setAccessible(true);
-            NamedThreadLocal resourcesT = (NamedThreadLocal) field.get(null);
-            resourcesT.remove();
+            NamedThreadLocal<Map<Object, Object>> threadLocal = (NamedThreadLocal<Map<Object, Object>>) field.get(null);
+            Map<Object, Object> resources = threadLocal.get();
+            List<Object> actualKeys = new ArrayList<>();
+            for (Object actualKey : resources.keySet()) {
+                for (Class<?> ignoreCleanupResource : transactionContext.getIgnoreCleanupResources()) {
+                    if (ignoreCleanupResource.isAssignableFrom(actualKey.getClass())) {
+                        actualKeys.add(actualKey);
+                    }
+                }
+            }
+            threadLocal.set(
+                resources.entrySet().stream()
+                    .filter(entry -> actualKeys.contains(entry.getKey()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+            );
         } catch (IllegalAccessException e) {
         }
         TransactionSynchronizationManager.clear();
+        transactionContext.clear();
     }
 
 
     /**
-     * Begin Committing Transaction.
+     * Begin Commit Transaction.
      *
      * @param status
      * @param xid

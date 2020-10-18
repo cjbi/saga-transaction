@@ -17,7 +17,7 @@ public class StatusSynchronization extends TransactionSynchronizationAdapter {
     public void afterCompletion(int status) {
         TransactionContext transactionContext = TransactionContextHolder.getTransactionContext();
         String xid = transactionContext.getXID();
-        //Release Lock
+        //After, release the lock, and cleanup the threadLocal resources.
         if (TransactionContextHolder.getTransactionContext().holdLock()) {
             TransactionContextHolder.getTransactionContext().getLockStore().releaseLock(xid);
         }

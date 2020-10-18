@@ -9,18 +9,18 @@ import java.util.Map;
 public interface StatusStore {
 
     /**
-     * 设置事务状态
+     * save the global transaction status to store.
      *
-     * @param xid
-     * @param status
+     * @param xid    transaction id
+     * @param status success or failure
      */
     void saveTransactionStatus(String xid, String nodeKey, boolean status);
 
     /**
-     * 获取事务状态
+     * list the global transaction status in the store.
      *
-     * @param xid
-     * @return
+     * @param xid transaction id
+     * @return transaction status list
      */
     List<Map<String, Boolean>> listTransactionStatus(String xid);
 

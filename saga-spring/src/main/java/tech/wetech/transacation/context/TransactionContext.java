@@ -1,17 +1,12 @@
 package tech.wetech.transacation.context;
 
-import com.ecwid.consul.v1.ConsulClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.wetech.transacation.GlobalTransactionManager;
-import tech.wetech.transacation.integration.consul.ConsulLockStore;
-import tech.wetech.transacation.integration.consul.ConsulStatusStore;
 import tech.wetech.transacation.store.LockStore;
 import tech.wetech.transacation.store.StatusStore;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author cjbi
@@ -29,55 +24,56 @@ public class TransactionContext {
     public static final String KEY_GLOBAL_LOCK_FLAG = "TX_LOCK";
     public static final Boolean VALUE_GLOBAL_LOCK_FLAG = true;
 
-    private ThreadLocal<Map<String, Object>> resources = ThreadLocal.withInitial(HashMap::new);
+    private ThreadLocal<Map<String, Object>> entries = ThreadLocal.withInitial(HashMap::new);
 
-    private final LockStore lockStore;
+    private LockStore lockStore;
 
-    private final StatusStore statusStore;
+    private StatusStore statusStore;
 
     private String nodeKey;
 
-    public TransactionContext(ConsulClient consulClient) {
-        this.lockStore = new ConsulLockStore(consulClient);
-        this.statusStore = new ConsulStatusStore(consulClient);
-        initTransactionContextHolder();
-    }
-
-    private void initTransactionContextHolder() {
-        TransactionContextHolder.setTransactionContext(this);
-    }
+    /**
+     * configure ignore cleanup synchronization resources.
+     */
+    private List<Class<?>> ignoreCleanupResources = new ArrayList<>();
 
     public Object put(String key, Object value) {
-        return resources.get().put(key, value);
+        return entries.get().put(key, value);
     }
 
     public Object get(String key) {
-        return resources.get().get(key);
+        return entries.get().get(key);
     }
 
     public Object remove(String key) {
-        return resources.get().remove(key);
+        return entries.get().remove(key);
     }
 
     public void putAll(Map<String, Object> entries) {
-        resources.get().putAll(entries);
+        this.entries.get().putAll(entries);
     }
 
     public Map<String, Object> entries() {
-        return resources.get();
+        return entries.get();
     }
 
     public LockStore getLockStore() {
+        if (lockStore == null) {
+            throw new IllegalStateException("LockStore or StatusStore can not be null, Please configure the implementation.");
+        }
         return lockStore;
     }
 
     public StatusStore getStatusStore() {
+        if (statusStore == null) {
+            throw new IllegalStateException("LockStore or StatusStore can not be null, Please configure the implementation.");
+        }
         return statusStore;
     }
 
     public String getNodeKey() {
         if (nodeKey == null) {
-            return UUID.randomUUID().toString();
+            this.nodeKey = UUID.randomUUID().toString();
         }
         return nodeKey;
     }
@@ -98,7 +94,7 @@ public class TransactionContext {
      */
     public void bind(String xid) {
         if (log.isDebugEnabled()) {
-            log.debug("bind {}", xid);
+            log.debug("Bind {}", xid);
         }
         put(KEY_XID, xid);
     }
@@ -118,6 +114,22 @@ public class TransactionContext {
 
     public void setNodeKey(String nodeKey) {
         this.nodeKey = nodeKey;
+    }
+
+    public void setLockStore(LockStore lockStore) {
+        this.lockStore = lockStore;
+    }
+
+    public void setStatusStore(StatusStore statusStore) {
+        this.statusStore = statusStore;
+    }
+
+    public List<Class<?>> getIgnoreCleanupResources() {
+        return ignoreCleanupResources;
+    }
+
+    public void setIgnoreCleanupResources(List<Class<?>> ignoreCleanupResources) {
+        this.ignoreCleanupResources = ignoreCleanupResources;
     }
 
     /**
@@ -143,7 +155,7 @@ public class TransactionContext {
     }
 
     public void clear() {
-        resources.remove();
+        entries.remove();
     }
 
 }

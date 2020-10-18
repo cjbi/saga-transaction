@@ -26,7 +26,7 @@ public class ConsulStatusStore implements StatusStore {
 
     @Override
     public void saveTransactionStatus(String xid, String nodeKey, boolean status) {
-        log.debug("Begin save transactionStatus to Consul, xid={}, nodeKey={}, status={}", xid, nodeKey, status);
+        log.debug("Begin Save CurrentNode TransactionStatus to Consul, xid={}, nodeKey={}, status={}", xid, nodeKey, status);
         consulClient.setKVValue("transaction/" + xid + "/branch/" + nodeKey, Objects.toString(status));
     }
 

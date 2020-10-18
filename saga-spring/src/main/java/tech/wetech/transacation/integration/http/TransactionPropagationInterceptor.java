@@ -20,7 +20,7 @@ public class TransactionPropagationInterceptor extends HandlerInterceptorAdapter
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String rpcXid = request.getHeader(HEADER_TRANSACTION_XID_KEY);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("xid in TransactionPropagationInterceptor[{}]", rpcXid);
+            LOGGER.debug("Xid In TransactionPropagationInterceptor[{}]", rpcXid);
         }
         if (rpcXid != null) {
             TransactionContextHolder.getTransactionContext().bind(rpcXid);

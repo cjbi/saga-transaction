@@ -16,7 +16,8 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import tech.wetech.transacation.GlobalTransactionManager;
-import tech.wetech.transacation.context.TransactionContext;
+import tech.wetech.transacation.integration.consul.ConsulLockStore;
+import tech.wetech.transacation.integration.consul.ConsulStatusStore;
 
 import javax.sql.DataSource;
 
@@ -34,6 +35,7 @@ public class PayApplication {
 
     /**
      * 配置事务管理器
+     *
      * @param consulClient
      * @param serviceInstance
      * @param dataSource
@@ -41,10 +43,15 @@ public class PayApplication {
      */
     @Bean
     public GlobalTransactionManager transactionManager(ConsulClient consulClient, ServiceInstance serviceInstance, DataSource dataSource) {
-        DataSourceTransactionManager dataSourceTransactionManager = new DataSourceTransactionManager(dataSource);
-        TransactionContext transactionContext = new TransactionContext(consulClient);
-        transactionContext.setNodeKey(serviceInstance.getInstanceId());
-        return new GlobalTransactionManager(transactionContext, dataSourceTransactionManager);
+        DataSourceTransactionManager dtm = new DataSourceTransactionManager(dataSource);
+        GlobalTransactionManager gtm = new GlobalTransactionManager(dtm);
+        //设置锁存储
+        gtm.setLockStore(new ConsulLockStore(consulClient));
+        //设置状态存储
+        gtm.setStatusStore(new ConsulStatusStore(consulClient));
+        //设置节点名称
+        gtm.setNodeKey(serviceInstance.getInstanceId());
+        return gtm;
     }
 
     @Autowired

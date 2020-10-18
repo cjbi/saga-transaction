@@ -1,21 +1,20 @@
 package tech.wetech.transacation.context;
-
 /**
  * @author cjbi
  */
 public class TransactionContextHolder {
 
-    private static TransactionContext INSTANCE = null;
+    private static TransactionContext instance = null;
 
     private TransactionContextHolder() {
     }
 
-    public static void setTransactionContext(final TransactionContext transactionContext) {
-        TransactionContextHolder.INSTANCE = transactionContext;
+    public static void initTransactionContext() {
+        instance = new TransactionContext();
     }
 
     public static TransactionContext getTransactionContext() {
-        return INSTANCE;
+        return instance;
     }
 
 }
