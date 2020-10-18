@@ -6,7 +6,9 @@ import tech.wetech.transacation.GlobalTransactionManager;
 import tech.wetech.transacation.store.LockStore;
 import tech.wetech.transacation.store.StatusStore;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author cjbi
@@ -31,11 +33,6 @@ public class TransactionContext {
     private StatusStore statusStore;
 
     private String nodeKey;
-
-    /**
-     * configure ignore cleanup synchronization resources.
-     */
-    private List<Class<?>> ignoreCleanupResources = new ArrayList<>();
 
     public Object put(String key, Object value) {
         return entries.get().put(key, value);
@@ -122,14 +119,6 @@ public class TransactionContext {
 
     public void setStatusStore(StatusStore statusStore) {
         this.statusStore = statusStore;
-    }
-
-    public List<Class<?>> getIgnoreCleanupResources() {
-        return ignoreCleanupResources;
-    }
-
-    public void setIgnoreCleanupResources(List<Class<?>> ignoreCleanupResources) {
-        this.ignoreCleanupResources = ignoreCleanupResources;
     }
 
     /**

@@ -17,12 +17,10 @@ import tech.wetech.transacation.store.LockStore;
 import tech.wetech.transacation.store.StatusStore;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 /**
  * 全局的事务管理器，通过consul协调分布式场景的Saga事务模型。
@@ -45,10 +43,6 @@ public class GlobalTransactionManager implements PlatformTransactionManager {
 
     public void setStatusStore(StatusStore statusStore) {
         this.transactionContext.setStatusStore(statusStore);
-    }
-
-    public void setIgnoreCleanupResources(List<Class<?>> resources) {
-        this.transactionContext.setIgnoreCleanupResources(resources);
     }
 
     public GlobalTransactionManager(PlatformTransactionManager... transactionManagers) {
@@ -123,21 +117,9 @@ public class GlobalTransactionManager implements PlatformTransactionManager {
             Field field = ReflectionUtils.findField(TransactionSynchronizationManager.class, "resources", ThreadLocal.class);
             field.setAccessible(true);
             NamedThreadLocal<Map<Object, Object>> threadLocal = (NamedThreadLocal<Map<Object, Object>>) field.get(null);
-            Map<Object, Object> resources = threadLocal.get();
-            List<Object> actualKeys = new ArrayList<>();
-            for (Object actualKey : resources.keySet()) {
-                for (Class<?> ignoreCleanupResource : transactionContext.getIgnoreCleanupResources()) {
-                    if (ignoreCleanupResource.isAssignableFrom(actualKey.getClass())) {
-                        actualKeys.add(actualKey);
-                    }
-                }
-            }
-            threadLocal.set(
-                resources.entrySet().stream()
-                    .filter(entry -> actualKeys.contains(entry.getKey()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-            );
+            threadLocal.remove();
         } catch (IllegalAccessException e) {
+            e.printStackTrace();
         }
         TransactionSynchronizationManager.clear();
         transactionContext.clear();

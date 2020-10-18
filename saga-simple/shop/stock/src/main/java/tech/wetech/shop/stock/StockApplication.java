@@ -9,7 +9,6 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import tech.wetech.shop.stock.entity.Stock;
 import tech.wetech.shop.stock.repository.StockRepository;
 import tech.wetech.transacation.GlobalTransactionManager;
@@ -47,8 +46,6 @@ public class StockApplication {
         gtm.setStatusStore(new ConsulStatusStore(consulClient));
         //设置节点名称
         gtm.setNodeKey(serviceInstance.getInstanceId());
-        //设置忽略的资源清单
-        gtm.setIgnoreCleanupResources(Arrays.asList(LocalContainerEntityManagerFactoryBean.class));
         return gtm;
     }
 
