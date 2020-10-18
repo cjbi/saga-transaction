@@ -11,6 +11,7 @@
 
     <modules>
         <module>shop</module>
+        <module>account</module>
     </modules>
 
 </project>
