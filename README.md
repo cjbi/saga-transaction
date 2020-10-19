@@ -15,7 +15,7 @@ Saga-Transaction
 
 ### 中间件依赖
 
-SpringCloud、Consul
+Spring、Consul
 
 ### 如何使用请看saga-simple这个工程（示例Demo）
 
@@ -23,5 +23,5 @@ SpringCloud、Consul
 - account 模拟转账业务分布式事务处理
 
 ### TODO List
-- 支持消息驱动的微服务架构事务处理（SpringCloud Bus）
+- 支持消息驱动的微服务架构事务处理（RabbitMQ）
 - 事务状态存储支持Redis、Zookeeper（目前只支持Consul）
