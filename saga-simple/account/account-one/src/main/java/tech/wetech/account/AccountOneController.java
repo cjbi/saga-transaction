@@ -24,12 +24,16 @@ public class AccountOneController {
     @Autowired
     private AccountTwoClient accountTwoClient;
 
+    @Autowired
+    private AccountTwoBackupClient accountTwoBackupClient;
+
     @PostMapping("/transfer/decrease")
     @Transactional
     public String decreaseAmount(String id, double amount) {
         double currentAmount = jdbcTemplate.queryForObject("select amount from t_account_one where id=?", Double.class, id);
         log.info("账户【{}】当前余额【{}】，即将减少【{}】", id, currentAmount, amount);
         accountTwoClient.increaseAmount(id, amount);
+        accountTwoBackupClient.increaseAmount(id, amount);
         int rows = jdbcTemplate.update("update t_account_one set amount = amount - ? where amount>=? and id = ?", amount, amount, id);
         if (rows == 0) {
             throw new IllegalStateException("余额不足");

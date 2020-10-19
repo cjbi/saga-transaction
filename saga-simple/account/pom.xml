@@ -11,6 +11,7 @@
     <modules>
         <module>account-one</module>
         <module>account-two</module>
+        <module>account-two-backup</module>
     </modules>
 
 </project>
