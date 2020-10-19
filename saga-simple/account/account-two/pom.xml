@@ -11,9 +11,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>tech.wetech.account</groupId>
-    <artifactId>saga-simple-account-one</artifactId>
+    <artifactId>saga-simple-account-two</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>account-one</name>
+    <name>account-two</name>
     <properties>
         <java.version>1.8</java.version>
         <spring-cloud.version>Hoxton.SR8</spring-cloud.version>

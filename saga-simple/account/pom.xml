@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>account-one</module>
+        <module>account-two</module>
     </modules>
 
 </project>

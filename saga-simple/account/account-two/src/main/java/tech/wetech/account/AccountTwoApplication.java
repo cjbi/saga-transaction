@@ -24,14 +24,14 @@ import javax.sql.DataSource;
 @EnableDiscoveryClient
 @EnableFeignClients
 @SpringBootApplication(scanBasePackages = "tech.wetech")
-public class AccountOneApplication {
-
-    public static void main(String[] args) {
-        SpringApplication.run(AccountOneApplication.class, args);
-    }
+public class AccountTwoApplication {
 
     @Autowired
     private ApplicationContext applicationContext;
+
+    public static void main(String[] args) {
+        SpringApplication.run(AccountTwoApplication.class, args);
+    }
 
     /**
      * 配置事务管理器
