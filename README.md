@@ -24,4 +24,4 @@ Spring、Consul
 
 ### TODO List
 - 支持消息驱动的微服务架构事务处理（rabbitmq）
-- 支持Redis、Zookeeper
+- 事务状态存储支持Redis、Zookeeper（目前只支持Consul）
