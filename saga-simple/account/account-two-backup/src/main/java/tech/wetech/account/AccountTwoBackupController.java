@@ -35,6 +35,7 @@ public class AccountTwoBackupController {
         log.info("账户【{}】当前余额【{}】，即将增加【{}】", id, currentAmount, amount);
         jdbcTemplate.update("update t_account_two_backup set amount = amount + ? where id = ?", amount, id);
         //同步更新mongo的数据(请注意：mongodb不支持单机事务，4.0支持跨文档事务（复制集）,4.2支持分片事务（cluster集群）)
+        //关于复制集的配置看这里：https://blog.51cto.com/11134648/2146034
         mongoTemplate.updateFirst(Query.query(Criteria.where("id").is(1)), Update.fromDocument(Document.parse("{$inc:{\"amount\":" + amount + "}}")), "account_two_backup_1");
         mongoTemplate.updateFirst(Query.query(Criteria.where("id").is(1)), Update.fromDocument(Document.parse("{$inc:{\"amount\":" + amount + "}}")), "account_two_backup_2");
         mongoTemplate.updateFirst(Query.query(Criteria.where("id").is(1)), Update.fromDocument(Document.parse("{$inc:{\"amount\":" + amount + "}}")), "account_two_backup_3");
