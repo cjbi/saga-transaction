@@ -7,7 +7,7 @@ Saga-Transaction | 自己动手实现Saga长事务
 
 1987年普林斯顿大学的Hector Garcia-Molina和Kenneth Salem发表了一篇Paper Sagas，讲述的是如何处理long lived transaction（长活事务）。Saga是一个长活事务可被分解成可以交错运行的子事务集合。其中每个子事务都是一个保持数据库一致性的真实事务。
 
-##＃ 框架主要特点
+### 框架主要特点
 
 - 两阶段提交本地事务（事务活动阶段、异步提交阶段），高性能，最终一致性
 - 事件驱动架构，参与者可异步执行，高吞吐
