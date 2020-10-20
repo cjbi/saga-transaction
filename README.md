@@ -51,3 +51,4 @@ Spring、Consul
 ### TODO List
 - 支持消息驱动的微服务架构事务处理（RabbitMQ）
 - 事务状态存储支持Redis、Zookeeper（目前只支持Consul）
+- 超时清理机制
