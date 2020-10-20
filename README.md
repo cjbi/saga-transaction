@@ -52,3 +52,4 @@ Spring、Consul
 - 支持消息驱动的微服务架构事务处理（RabbitMQ）
 - 事务状态存储支持Redis、Zookeeper（目前只支持Consul）
 - 超时清理机制
+- 异常调用cancel方法自动补偿事务（无数据库事务场景）
