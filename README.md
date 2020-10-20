@@ -42,12 +42,12 @@ Saga-Transaction | 自己动手实现Saga长事务
 
 Spring、Consul
 
-### 如何使用请看saga-simple这个工程（示例Demo）
+## 如何使用请看saga-simple这个工程（示例Demo）
 
 - shop 商城系统分布式事务处理（订单保存、库存扣减、支付订单）
 - account 模拟转账业务分布式事务处理
 
-### TODO List
+## TODO List
 - 异常调用cancel方法自动补偿事务（不使用数据库事务场景）
 - 超时机制
 - 支持消息驱动的微服务架构事务处理（RabbitMQ）
